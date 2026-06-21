@@ -42,7 +42,7 @@ class PDFExporter {
             titleString.draw(at: CGPoint(x: 40, y: 40))
             
             // 6. Check for Chapter 1 (Book Introduction)
-            var textStartTop: CGFloat = 120
+            var textStartTop: CGFloat = 160 // Increased to match screen top padding + Zapfino height
             
             if title.hasSuffix(" 1") { // Detection for Chapter 1
                 // Load Emblem
@@ -69,11 +69,11 @@ class PDFExporter {
                 let headerString = NSAttributedString(string: bookName, attributes: headerAttributes)
                 let headerSize = headerString.size()
                 let headerX = (size.width - headerSize.width) / 2
-                // Push Title down below the bigger emblem (starts at 50 + 260 = 310, plus padding -> 330)
-                headerString.draw(at: CGPoint(x: headerX, y: 330))
+                // Push Title down below the bigger emblem
+                headerString.draw(at: CGPoint(x: headerX, y: 350))
                 
-                // Push text down further
-                textStartTop = 410 // Was 380
+                // Push text down significantly to account for screen's Zapfino drop-cap bounding box
+                textStartTop = 550 // Was 410
             }
             
             // 7. Draw Text (Using BibleTextParser for Rich Layout)
