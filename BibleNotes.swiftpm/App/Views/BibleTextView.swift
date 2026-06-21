@@ -16,21 +16,26 @@ struct BibleTextView: View {
                 
                 // BOOK INTRODUCTION HEADER (Chapter 1 Only)
                 if viewModel.currentChapter == 1 {
-                    VStack(spacing: 15) {
-                        Image("Transparent_Main_Emblem")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 260) 
-                            // Removed .foregroundColor to ensure transparency works
+                    VStack(alignment: .leading, spacing: 15) {
+                        GeometryReader { geo in
+                            Image("Transparent_Main_Emblem")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 260)
+                                .blendMode(.multiply) // Makes the white background match the app's sepia background
+                                .frame(width: UIScreen.main.bounds.width)
+                                .offset(x: -20) // Counteract the LEFT_MARGIN of 20 to strictly center on screen
+                        }
+                        .frame(height: 280) // GeometryReader needs a fixed height to not collapse
+                        .padding(.bottom, 10)
                         
                         Text(viewModel.currentBook.uppercased())
                             .font(.custom("IowanOldStyle-Bold", size: 30))
-                            .tracking(4) // Wide letter spacing
+                            .tracking(4)
                             .foregroundColor(AppTheme.darkSepia)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 40)
                     .transition(.opacity)
+                    .padding(.bottom, 20)
                 }
                 
                 ForEach(0..<blocks.count, id: \.self) { index in

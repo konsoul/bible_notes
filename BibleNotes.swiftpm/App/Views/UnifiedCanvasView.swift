@@ -59,6 +59,7 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
         
         let hostingController = UIHostingController(rootView: textView)
         hostingController.view.backgroundColor = .clear
+        hostingController.view.clipsToBounds = false
         hostingController.view.tag = Self.TEXT_VIEW_TAG
         
         viewController.addChild(hostingController)
