@@ -42,7 +42,7 @@ class PDFExporter {
             titleString.draw(at: CGPoint(x: 40, y: 40))
             
             // 6. Check for Chapter 1 (Book Introduction)
-            var textStartTop: CGFloat = 160 // Increased to match screen top padding + Zapfino height
+            var textStartTop: CGFloat = 120 // Pulled up from 160
             
             if title.hasSuffix(" 1") { // Detection for Chapter 1
                 // Load Emblem
@@ -73,7 +73,7 @@ class PDFExporter {
                 headerString.draw(at: CGPoint(x: headerX, y: 350))
                 
                 // Push text down significantly to account for screen's Zapfino drop-cap bounding box
-                textStartTop = 550 // Was 410
+                textStartTop = 510 // Pulled up from 550
             }
             
             // 7. Draw Text (Using BibleTextParser for Rich Layout)
