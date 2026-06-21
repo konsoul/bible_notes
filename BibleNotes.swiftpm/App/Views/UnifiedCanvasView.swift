@@ -40,6 +40,17 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
         canvasView.maximumZoomScale = 1.0
         canvasView.delegate = context.coordinator
         
+        // Add Undo/Redo Gestures
+        let undoGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleUndo))
+        undoGesture.numberOfTouchesRequired = 2
+        undoGesture.numberOfTapsRequired = 2
+        canvasView.addGestureRecognizer(undoGesture)
+        
+        let redoGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleRedo))
+        redoGesture.numberOfTouchesRequired = 3
+        redoGesture.numberOfTapsRequired = 2
+        canvasView.addGestureRecognizer(redoGesture)
+        
         // Add Canvas to VC
         viewController.view.addSubview(canvasView)
         canvasView.translatesAutoresizingMaskIntoConstraints = false
@@ -138,6 +149,19 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
         func setupToolPicker(for canvas: PKCanvasView) {
             let toolPicker = PKToolPicker()
             self.toolPicker = toolPicker
+        }
+        
+        // MARK: - Gestures
+        @objc func handleUndo() {
+            if parent.canvasView.undoManager?.canUndo == true {
+                parent.canvasView.undoManager?.undo()
+            }
+        }
+        
+        @objc func handleRedo() {
+            if parent.canvasView.undoManager?.canRedo == true {
+                parent.canvasView.undoManager?.redo()
+            }
         }
         
         // MARK: - PKCanvasViewDelegate
