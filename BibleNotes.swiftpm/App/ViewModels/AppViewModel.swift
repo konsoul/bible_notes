@@ -13,8 +13,18 @@ class AppViewModel: ObservableObject {
     // Full Bible Book List
     let books = BibleData.books
     
+    // Dependencies
+    @Published var bookmarkManager = BookmarkManager()
+    
+    private var cancellables = Set<AnyCancellable>()
+    
     init() {
-        // Initialization if needed
+        // Forward BookmarkManager changes to AppViewModel
+        bookmarkManager.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
     
     func openBible() {
@@ -24,16 +34,12 @@ class AppViewModel: ObservableObject {
         fetchChapter()
     }
     
-    private var fetchTask: AnyCancellable?
-    
     func fetchChapter() {
         self.isLoading = true
         self.errorMessage = nil
         
-        fetchTask?.cancel()
-        
         // Use the real service
-        fetchTask = BibleAPIService.shared.fetchChapter(book: currentBook, chapter: currentChapter)
+        BibleAPIService.shared.fetchChapter(book: currentBook, chapter: currentChapter)
             .sink(receiveCompletion: { [weak self] completion in
                 self?.isLoading = false
                 switch completion {
@@ -46,6 +52,7 @@ class AppViewModel: ObservableObject {
             }, receiveValue: { [weak self] text in
                 self?.bibleText = text
             })
+            .store(in: &cancellables)
     }
     
     // MARK: - Navigation

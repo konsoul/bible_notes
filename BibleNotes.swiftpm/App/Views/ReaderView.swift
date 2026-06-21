@@ -9,6 +9,7 @@ struct ReaderView: View {
     
     @State private var showBookSelector: Bool = false
     @State private var showChapterSelector: Bool = false
+    @State private var showBookmarks: Bool = false
     @State private var pdfItem: PDFItem?
     @State private var canvasSize: CGSize?
     @State private var isWritingMode: Bool = true // Default to Writing Mode
@@ -75,6 +76,16 @@ struct ReaderView: View {
                         .padding(.leading, 5)
                         
                         Spacer()
+                        
+                        // Bookmarks Button
+                        Button(action: {
+                            showBookmarks = true
+                        }) {
+                            Image(systemName: "bookmark.fill")
+                                .font(.title3)
+                                .foregroundColor(AppTheme.goldAccent)
+                        }
+                        .padding(5)
                         // Export Button
                         Button(action: {
                             exportPDF()
@@ -135,6 +146,9 @@ struct ReaderView: View {
         }
         .sheet(isPresented: $showChapterSelector) {
             ChapterSelectorView()
+        }
+        .sheet(isPresented: $showBookmarks) {
+            BookmarksListView()
         }
         .sheet(item: $pdfItem) { item in
             ShareSheet(activityItems: [item.url])

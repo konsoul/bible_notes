@@ -66,15 +66,50 @@ struct BibleTextView: View {
                         
                     } else {
                         // VERSE TEXT
+                        let verseNum = block.verseNumber
+                        let isBookmarked: Bool = {
+                            guard let v = verseNum else { return false }
+                            return viewModel.bookmarkManager.isBookmarked(
+                                book: viewModel.currentBook,
+                                chapter: viewModel.currentChapter,
+                                verse: v
+                            )
+                        }()
+                        
                         Text(block.text)
                             .font(.system(size: fontSize, weight: .regular, design: .serif))
                             .lineSpacing(10)
                             .foregroundColor(AppTheme.parchmentText)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
-                            .background(Color.clear)
+                            .background(
+                                isBookmarked ? AppTheme.goldAccent.opacity(0.3) : Color.clear
+                            )
                             .cornerRadius(4)
                             .fixedSize(horizontal: false, vertical: true)
+                            .contextMenu {
+                                if let verseNumber = verseNum {
+                                    Button {
+                                        if isBookmarked {
+                                            viewModel.bookmarkManager.remove(
+                                                book: viewModel.currentBook,
+                                                chapter: viewModel.currentChapter,
+                                                verse: verseNumber
+                                            )
+                                        } else {
+                                            viewModel.bookmarkManager.add(
+                                                book: viewModel.currentBook,
+                                                chapter: viewModel.currentChapter,
+                                                verse: verseNumber,
+                                                text: block.text
+                                            )
+                                        }
+                                    } label: {
+                                        Label(isBookmarked ? "Remove Bookmark" : "Bookmark Verse",
+                                              systemImage: isBookmarked ? "bookmark.slash" : "bookmark")
+                                    }
+                                }
+                            }
                     }
                 }
             }
