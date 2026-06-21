@@ -2,20 +2,16 @@ import SwiftUI
 import Combine
 
 class AppViewModel: ObservableObject {
-    @Published var showSplashScreen: Bool = true
-    @Published var currentBook: String = "John"
-    @Published var currentChapter: Int = 1
+    // MARK: - Published State
+    @Published var showSplashScreen = true
+    @Published var currentBook = "John"
+    @Published var currentChapter = 1
+    @Published var bibleText = "Loading..."
     
-    @Published var bibleText: String = "Loading..."
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
+    // MARK: - Private
+    private var fetchTask: AnyCancellable?
     
-    // Full Bible Book List
-    let books = BibleData.books
-    
-    init() {
-        // Initialization if needed
-    }
+    // MARK: - Actions
     
     func openBible() {
         withAnimation {
@@ -24,59 +20,48 @@ class AppViewModel: ObservableObject {
         fetchChapter()
     }
     
-    private var fetchTask: AnyCancellable?
-    
     func fetchChapter() {
-        self.isLoading = true
-        self.errorMessage = nil
-        
         fetchTask?.cancel()
         
-        // Use the real service
-        fetchTask = BibleAPIService.shared.fetchChapter(book: currentBook, chapter: currentChapter)
-            .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    self?.errorMessage = "Error: \(error.localizedDescription)"
-                    self?.bibleText = "Failed to load text."
+        fetchTask = BibleAPIService.shared
+            .fetchChapter(book: currentBook, chapter: currentChapter)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.bibleText = "Failed to load text.\n\(error.localizedDescription)"
+                    }
+                },
+                receiveValue: { [weak self] text in
+                    self?.bibleText = text
                 }
-            }, receiveValue: { [weak self] text in
-                self?.bibleText = text
-            })
+            )
     }
     
     // MARK: - Navigation
     
     func nextChapter() {
         guard let maxChapters = BibleData.chapterCounts[currentBook],
-              let currentBookIndex = BibleData.books.firstIndex(of: currentBook) else { return }
+              let bookIndex = BibleData.books.firstIndex(of: currentBook) else { return }
         
         if currentChapter < maxChapters {
             currentChapter += 1
-            fetchChapter()
-        } else if currentBookIndex + 1 < BibleData.books.count {
-            // Next Book
-            currentBook = BibleData.books[currentBookIndex + 1]
+        } else if bookIndex + 1 < BibleData.books.count {
+            currentBook = BibleData.books[bookIndex + 1]
             currentChapter = 1
-            fetchChapter()
         }
+        fetchChapter()
     }
     
     func previousChapter() {
-        guard let currentBookIndex = BibleData.books.firstIndex(of: currentBook) else { return }
+        guard let bookIndex = BibleData.books.firstIndex(of: currentBook) else { return }
         
         if currentChapter > 1 {
             currentChapter -= 1
-            fetchChapter()
-        } else if currentBookIndex > 0 {
-            // Previous Book
-            let prevBook = BibleData.books[currentBookIndex - 1]
+        } else if bookIndex > 0 {
+            let prevBook = BibleData.books[bookIndex - 1]
             currentBook = prevBook
             currentChapter = BibleData.chapterCounts[prevBook] ?? 1
-            fetchChapter()
         }
+        fetchChapter()
     }
 }
