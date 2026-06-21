@@ -22,7 +22,6 @@ struct BibleTextView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 260)
-                                .blendMode(.screen) // Makes the black background disappear, leaving only the gold emblem!
                                 .frame(width: UIScreen.main.bounds.width)
                                 .offset(x: -20) // Counteract the LEFT_MARGIN of 20 to strictly center on screen
                         }
