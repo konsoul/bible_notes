@@ -25,7 +25,7 @@ class PDFExporter {
             
             // 4. Draw Background
             let bgContext = context.cgContext
-            bgContext.setFillColor(UIColor(hex: "2B2218").cgColor) // AppTheme.darkSepia
+            bgContext.setFillColor(UIColor(hex: "F9F6EE").cgColor) // AppTheme.darkSepia
             bgContext.fill(pageRect)
             
             // 5. Setup Text Width (65% of page, matching screen layout)

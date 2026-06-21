@@ -12,10 +12,10 @@ struct AppTheme {
     static let goldAccent = Color(hex: "D4AF37") // Metallic gold
     static let paperBackground = Color(hex: "FDFBF7") // Off-white paper
     
-    // New Sepia Theme
-    static let darkSepia = Color(hex: "2B2218") // Deep warm brown/black
-    static let lighterSepia = Color(hex: "3B2F22") // Slightly lighter for UI elements
-    static let parchmentText = Color(hex: "E6DCC8") // Light cream text
+    // New Paper White Theme (formerly Sepia)
+    static let darkSepia = Color(hex: "F9F6EE") // Paper white background
+    static let lighterSepia = Color(hex: "F4EFE6") // Slightly darker for UI elements
+    static let parchmentText = Color(hex: "222222") // Dark charcoal ink text
     
     // Antique Cover Theme
     static let leatherRed = Color(hex: "4A0404") // Deep antique red/brown

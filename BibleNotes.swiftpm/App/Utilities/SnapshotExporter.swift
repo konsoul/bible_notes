@@ -34,7 +34,7 @@ class SnapshotExporter {
             
             // 1. Draw Background
             let bgRect = CGRect(origin: .zero, size: captureSize)
-            cgContext.setFillColor(UIColor(hex: "2B2218").cgColor) // AppTheme.darkSepia
+            cgContext.setFillColor(UIColor(hex: "F9F6EE").cgColor) // AppTheme.darkSepia
             cgContext.fill(bgRect)
             
             // 2. Setup Text Width (65% of page, matching screen layout)
