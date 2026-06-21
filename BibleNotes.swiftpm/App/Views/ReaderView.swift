@@ -174,22 +174,14 @@ struct ReaderView: View {
             return
         }
         
-        // 1. Save EXACTLY the file we were just working on (previousFilename)
-        UnifiedCanvasView.triggerSave(canvas: canvasView, filename: previousFilename)
+        // 1. Save and Undo clear are now handled safely inside UnifiedCanvasView.updateUIViewController
+        // to prevent race conditions.
         
-        // 2. Refresh the canvas for the new chapter
-        // We REUSE the existing canvasView instance to prevent 'handwritingd' crashes
-        // and toolPicker connection issues.
-        // The new data will be loaded when UnifiedCanvasView is re-evaluated via .id()
-        
-        // Clear Undo Stack so you can't undo back into the previous chapter
-        canvasView.undoManager?.removeAllActions()
-        
-        // 3. Update previousFilename to the NEW one IMMEDIATELY
+        // 2. Update previousFilename to the NEW one IMMEDIATELY
         // Accessing currentFilename here is safe as it relies on viewModel which is already updated
         self.previousFilename = self.currentFilename
         
-        // 4. Fetch the NEW Bible Text
+        // 3. Fetch the NEW Bible Text
         viewModel.fetchChapter()
     }
     

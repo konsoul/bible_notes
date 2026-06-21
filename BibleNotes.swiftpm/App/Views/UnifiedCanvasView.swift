@@ -100,8 +100,16 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
         
         // CHECK FILENAME CHANGE
         if context.coordinator.lastFilename != filename {
+            if !context.coordinator.lastFilename.isEmpty {
+                UnifiedCanvasView.saveDrawing(canvasView, filename: context.coordinator.lastFilename)
+            }
             context.coordinator.lastFilename = filename
             loadDrawing(into: canvasView)
+            
+            // Scroll to top when chapter changes!
+            canvasView.contentOffset = .zero
+            
+            canvasView.undoManager?.removeAllActions()
         }
         
         // Layout Update
@@ -120,6 +128,7 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
         var lastText: String = ""
         var lastFilename: String = ""
         private var saveTimer: Timer?
+        var isCurrentlyWritingMode: Bool? = nil
         
         init(_ parent: UnifiedCanvasView) {
             self.parent = parent
@@ -145,11 +154,23 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
             guard let toolPicker = toolPicker else { return }
             guard let textContainer = textController?.view else { return }
             
+            // Prevent redundant responder updates which can interrupt active strokes and corrupt PencilKit state
+            if isCurrentlyWritingMode == isWriting { return }
+            isCurrentlyWritingMode = isWriting
+            
             if isWriting {
                 // WRITING MODE: Drawing surface on top, text behind
                 toolPicker.setVisible(true, forFirstResponder: canvas)
                 toolPicker.addObserver(canvas)
-                canvas.becomeFirstResponder()
+                
+                if canvas.window != nil {
+                    canvas.becomeFirstResponder()
+                } else {
+                    DispatchQueue.main.async {
+                        canvas.becomeFirstResponder()
+                    }
+                }
+                
                 canvas.sendSubviewToBack(textContainer)
                 canvas.drawingGestureRecognizer.isEnabled = true
             } else {
@@ -173,7 +194,9 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
             let xPosition: CGFloat = UnifiedCanvasView.LEFT_MARGIN
             
             let size = textController.sizeThatFits(in: CGSize(width: desiredTextWidth, height: .greatestFiniteMagnitude))
-            let requiredHeight = max(size.height + 200, canvas.bounds.height)
+            let drawingBounds = canvas.drawing.bounds
+            let drawingHeight = drawingBounds.isNull ? 0 : drawingBounds.maxY
+            let requiredHeight = max(size.height + 200, max(canvas.bounds.height, drawingHeight + 200))
             
             // Layout Text (left side)
             textContainer.frame = CGRect(x: xPosition, y: 0, width: desiredTextWidth, height: requiredHeight)
@@ -188,8 +211,6 @@ struct UnifiedCanvasView: UIViewControllerRepresentable {
     
     // MARK: - Persistence
     private func loadDrawing(into canvas: PKCanvasView) {
-        canvas.contentOffset = .zero 
-        
         let url = UnifiedCanvasView.getDocumentsDirectory().appendingPathComponent(filename)
         if FileManager.default.fileExists(atPath: url.path) {
             do {

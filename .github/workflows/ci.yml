@@ -1,0 +1,28 @@
+name: Swift CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-lint:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Install SwiftLint
+      run: brew install swiftlint
+
+    - name: Run SwiftLint
+      run: swiftlint --strict
+
+    - name: Build with xcodebuild
+      working-directory: BibleNotes.swiftpm
+      run: |
+        # In a Swift Playgrounds app, xcodebuild can target the package directly.
+        # We specify the destination to an iOS Simulator since it's an iOS app.
+        xcodebuild clean build -scheme "Bible Notes" -destination "platform=iOS Simulator,name=iPhone 15" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO

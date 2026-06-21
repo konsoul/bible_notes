@@ -1,0 +1,24 @@
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - function_body_length
+  - type_body_length
+  - multiple_closures_with_trailing_closure
+  - identifier_name
+
+opt_in_rules:
+  - empty_count
+  - force_unwrapping
+  - closure_spacing
+  - let_var_whitespace
+
+included:
+  - BibleNotes.swiftpm/App
+
+excluded:
+  - Pods
+  - .build
+  - DerivedData
+  - BibleNotes.swiftpm/Package.swift
+
+force_unwrapping: error
