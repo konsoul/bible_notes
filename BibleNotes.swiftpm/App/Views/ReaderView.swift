@@ -186,9 +186,41 @@ struct ShareSheet: UIViewControllerRepresentable {
     var applicationActivities: [UIActivity]? = nil
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        // Wrap URLs in our custom ItemSource to fix iOS 16+ UTI / permission errors
+        let processedItems: [Any] = activityItems.map { item in
+            if let url = item as? URL {
+                return PDFItemSource(url: url)
+            }
+            return item
+        }
+        
+        let controller = UIActivityViewController(activityItems: processedItems, applicationActivities: applicationActivities)
         return controller
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+class PDFItemSource: NSObject, UIActivityItemSource {
+    let url: URL
+    
+    init(url: URL) {
+        self.url = url
+    }
+    
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        return url
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        return url
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        return url.lastPathComponent
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
+        return "com.adobe.pdf" // Explicitly declare as PDF so LaunchServices doesn't panic
+    }
 }
