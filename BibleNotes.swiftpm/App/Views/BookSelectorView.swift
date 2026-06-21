@@ -30,38 +30,38 @@ struct BookSelectorView: View {
                 
                 // Book List
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        // Old Testament Header
-                        Text("OLD TESTAMENT")
-                            .font(.system(size: 14, weight: .bold, design: .serif))
-                            .foregroundColor(AppTheme.goldShadow)
-                            .padding(.horizontal)
-                            .padding(.top, 20)
-                            .padding(.bottom, 5)
-                            .tracking(2)
-                        
-                        Divider().background(AppTheme.goldShadow)
-                        
-                        ForEach(BibleData.books.prefix(39), id: \.self) { book in
-                            bookRow(for: book)
+                    HStack(alignment: .top, spacing: 20) {
+                        // LEFT COLUMN: Old Testament
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("OLD TESTAMENT")
+                                .font(.system(size: 14, weight: .bold, design: .serif))
+                                .foregroundColor(AppTheme.goldShadow)
+                                .tracking(1)
+                                .padding(.bottom, 5)
+                            
+                            ForEach(BibleData.books.prefix(39), id: \.self) { book in
+                                bookRow(for: book)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
                         
-                        // New Testament Header
-                        Text("NEW TESTAMENT")
-                            .font(.system(size: 14, weight: .bold, design: .serif))
-                            .foregroundColor(AppTheme.goldShadow)
-                            .padding(.horizontal)
-                            .padding(.top, 30)
-                            .padding(.bottom, 5)
-                            .tracking(2)
-                        
-                        Divider().background(AppTheme.goldShadow)
-                        
-                        ForEach(BibleData.books.suffix(27), id: \.self) { book in
-                            bookRow(for: book)
+                        // RIGHT COLUMN: New Testament
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("NEW TESTAMENT")
+                                .font(.system(size: 14, weight: .bold, design: .serif))
+                                .foregroundColor(AppTheme.goldShadow)
+                                .tracking(1)
+                                .padding(.bottom, 5)
+                            
+                            ForEach(BibleData.books.suffix(27), id: \.self) { book in
+                                bookRow(for: book)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
                     }
-                    .padding(.bottom, 40)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                    .padding(.bottom, 60)
                 }
             }
         }
@@ -74,28 +74,36 @@ struct BookSelectorView: View {
         }) {
             HStack {
                 Text(book)
-                    .font(.system(size: 18, weight: .medium, design: .serif))
+                    .font(.system(size: 16, weight: .semibold, design: .serif))
                     .foregroundColor(
                         viewModel.currentBook == book
-                        ? AppTheme.goldAccent
+                        ? AppTheme.darkSepia
                         : AppTheme.parchmentText
                     )
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
                 
                 Spacer()
                 
                 if viewModel.currentBook == book {
                     Image(systemName: "checkmark")
-                        .foregroundColor(AppTheme.goldAccent)
+                        .foregroundColor(AppTheme.darkSepia)
+                        .font(.system(size: 12, weight: .bold))
                 }
             }
-            .padding()
+            .padding(.vertical, 12)
+            .padding(.horizontal, 15)
             .background(
                 viewModel.currentBook == book
-                ? AppTheme.lighterSepia
-                : Color.clear
+                ? AppTheme.goldAccent
+                : AppTheme.lighterSepia
+            )
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(AppTheme.goldAccent.opacity(0.2), lineWidth: 1)
             )
         }
-        Divider().background(AppTheme.lighterSepia)
     }
     
     private func selectBook(_ book: String) {
