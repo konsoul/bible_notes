@@ -16,7 +16,7 @@ struct BibleNotesApp: App {
                         .environmentObject(appViewModel)
                 }
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(.light)
         }
     }
 }
