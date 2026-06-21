@@ -22,7 +22,7 @@ struct BibleTextView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 260)
-                                .blendMode(.multiply) // Makes the white background match the app's sepia background
+                                .blendMode(.screen) // Makes the black background disappear, leaving only the gold emblem!
                                 .frame(width: UIScreen.main.bounds.width)
                                 .offset(x: -20) // Counteract the LEFT_MARGIN of 20 to strictly center on screen
                         }
@@ -32,7 +32,7 @@ struct BibleTextView: View {
                         Text(viewModel.currentBook.uppercased())
                             .font(.custom("IowanOldStyle-Bold", size: 30))
                             .tracking(4)
-                            .foregroundColor(AppTheme.darkSepia)
+                            .foregroundColor(AppTheme.goldAccent)
                     }
                     .transition(.opacity)
                     .padding(.bottom, 20)
