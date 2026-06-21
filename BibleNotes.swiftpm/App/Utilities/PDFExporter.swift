@@ -120,10 +120,8 @@ class PDFExporter {
             finalAttribString.draw(in: textRect)
             
             // 7. Draw PencilKit Drawing (Overlay)
-            // Tuning: Previous 0 was VERY close.
-            // Screenshot shows Drawing is slightly HIGH relative to text (Center vs Bottom of word).
-            // Pushing drawing DOWN by 20pts to align perfectly.
-            let drawingYOffset: CGFloat = 20 
+            // Pull drawing UP to align with on-screen text position
+            let drawingYOffset: CGFloat = -20 
             
             let image = drawing.image(from: pageRect, scale: 1.0)
             let drawingRect = CGRect(x: 0, y: drawingYOffset, width: pageRect.width, height: pageRect.height)
