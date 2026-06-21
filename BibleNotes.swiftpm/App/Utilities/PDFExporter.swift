@@ -2,133 +2,83 @@ import UIKit
 import PDFKit
 import PencilKit
 
-class PDFExporter {
+struct PDFExporter {
+    
+    // MARK: - Layout Constants (must match UnifiedCanvasView / BibleTextView)
+    private static let leftMargin: CGFloat = 20
+    private static let textWidthRatio: CGFloat = 0.65
+    private static let minTextWidth: CGFloat = 350
+    private static let drawingYOffset: CGFloat = -20
+    
+    // MARK: - Font Cache (avoid repeated font lookups per export)
+    private static let titleFont = UIFont(name: "IowanOldStyle-Bold", size: 30) ?? .boldSystemFont(ofSize: 30)
+    private static let headerFont = UIFont(name: "IowanOldStyle-Bold", size: 36) ?? .boldSystemFont(ofSize: 36)
+    private static let headingFont = UIFont(name: "IowanOldStyle-Bold", size: 24) ?? .boldSystemFont(ofSize: 24)
+    private static let verseFont = UIFont.systemFont(ofSize: 20, weight: .regular)
+    
+    // MARK: - Public API
+    
     static func exportPDF(title: String, text: String, drawing: PKDrawing, size: CGSize) -> URL? {
-        // 1. Setup PDF Format
-        let pdfMetaData = [
-            kCGPDFContextCreator: "Bible Notes App",
-            kCGPDFContextAuthor: "User"
-        ]
         let format = UIGraphicsPDFRendererFormat()
-        format.documentInfo = pdfMetaData as [String: Any]
+        format.documentInfo = [
+            kCGPDFContextCreator as String: "Bible Notes App",
+            kCGPDFContextAuthor as String: "User"
+        ]
         
-        // 2. Define Page Size
-        // We use the passed 'size' (which comes from UnifiedCanvasView geometry)
-        // OR we use a standard A4 if size is zero/weird.
-        let pageRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        
-        // 3. Create Renderer
+        let pageRect = CGRect(origin: .zero, size: size)
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
         
-        let data = renderer.pdfData { (context) in
+        let data = renderer.pdfData { context in
             context.beginPage()
             
-            // 4. Draw Background
-            let bgContext = context.cgContext
-            bgContext.setFillColor(UIColor(hex: "F9F6EE").cgColor) // AppTheme.darkSepia
-            bgContext.fill(pageRect)
+            // Background
+            context.cgContext.setFillColor(AppTheme.uiDarkSepia.cgColor)
+            context.cgContext.fill(pageRect)
             
-            // 5. Setup Text Width (65% of page, matching screen layout)
-            let leftMargin: CGFloat = 20
-            let textWidth = max(size.width * 0.65, 350)
+            let textWidth = max(size.width * textWidthRatio, minTextWidth)
             
-            // 6. Draw Title (Standard Small Header)
-            let titleFont = UIFont(name: "IowanOldStyle-Bold", size: 30) ?? UIFont.boldSystemFont(ofSize: 30)
+            // Title
             let titleAttributes: [NSAttributedString.Key: Any] = [
                 .font: titleFont,
-                .foregroundColor: UIColor(hex: "F9E076") // AppTheme.goldHighlight
+                .foregroundColor: AppTheme.uiGoldHighlight
             ]
-            let titleString = NSAttributedString(string: title, attributes: titleAttributes)
-            titleString.draw(at: CGPoint(x: 40, y: 40))
+            NSAttributedString(string: title, attributes: titleAttributes)
+                .draw(at: CGPoint(x: 40, y: 40))
             
-            // 6. Check for Chapter 1 (Book Introduction)
-            var textStartTop: CGFloat = 120 // Pulled up from 160
+            // Chapter 1 header (emblem + book name)
+            var textStartTop: CGFloat = 120
             
-            if title.hasSuffix(" 1") { // Detection for Chapter 1
-                // Load Emblem
+            if title.hasSuffix(" 1") {
                 if let emblem = UIImage(named: "Transparent_Main_Emblem") {
-                    let emblemSize = CGSize(width: 300, height: 260) // Made bigger (was 250x220)
+                    let emblemSize = CGSize(width: 300, height: 260)
                     let emblemX = (size.width - emblemSize.width) / 2
-                    let emblemRect = CGRect(x: emblemX, y: 50, width: emblemSize.width, height: emblemSize.height)
-                    
-                    // Draw Emblem (Tinted Gold manually or assuming asset is gold)
-                    emblem.draw(in: emblemRect)
+                    emblem.draw(in: CGRect(x: emblemX, y: 50, width: emblemSize.width, height: emblemSize.height))
                 }
                 
-                // Draw Book Name (Big, Centered)
-                // Extract Book Name: "John 1" -> "JOHN"
-                let bookName = title.dropLast(2).uppercased() // Remove " 1"
-                
-                let headerFont = UIFont(name: "IowanOldStyle-Bold", size: 36) ?? UIFont.boldSystemFont(ofSize: 36)
+                let bookName = String(title.dropLast(2)).uppercased()
                 let headerAttributes: [NSAttributedString.Key: Any] = [
                     .font: headerFont,
-                    .foregroundColor: UIColor(hex: "D4AF37"), // Gold
-                    .kern: 4 // Wide tracking
+                    .foregroundColor: AppTheme.uiGoldAccent,
+                    .kern: 4
                 ]
-                
                 let headerString = NSAttributedString(string: bookName, attributes: headerAttributes)
-                let headerSize = headerString.size()
-                let headerX = (size.width - headerSize.width) / 2
-                // Push Title down below the bigger emblem
+                let headerX = (size.width - headerString.size().width) / 2
                 headerString.draw(at: CGPoint(x: headerX, y: 350))
                 
-                // Push text down significantly to account for screen's Zapfino drop-cap bounding box
-                textStartTop = 510 // Pulled up from 550
+                textStartTop = 510
             }
             
-            // 7. Draw Text (Using BibleTextParser for Rich Layout)
-            
-            // Parse Blocks
-            let blocks = BibleTextParser.parse(text)
-            let finalAttribString = NSMutableAttributedString()
-            
-            for (index, block) in blocks.enumerated() {
-                var attributes: [NSAttributedString.Key: Any] = [:]
-                let paragraphStyle = NSMutableParagraphStyle()
-                paragraphStyle.lineSpacing = 10 // Match Screen .lineSpacing(10)
-                
-                if block.isHeading {
-                    // HEADING STYLE
-                    let headingFont = UIFont(name: "IowanOldStyle-Bold", size: 24) ?? UIFont.boldSystemFont(ofSize: 24)
-                    attributes[.font] = headingFont
-                    attributes[.foregroundColor] = UIColor(hex: "F9E076") // Gold
-                    
-                    // Extra spacing for heading: Match Screen Zapfino Height (HUGE)
-                    // The Zapfino font + Divider + Padding on screen takes up ~100pts
-                    paragraphStyle.paragraphSpacing = 90
-                    paragraphStyle.paragraphSpacingBefore = index == 0 ? 0 : 50 
-                } else {
-                    // VERSE STYLE
-                    // Match Screen Font (20) exactly to preserve wrapping
-                    let verseFont = UIFont.systemFont(ofSize: 20, weight: .regular)
-                    attributes[.font] = verseFont
-                    attributes[.foregroundColor] = UIColor(hex: "222222") // Dark Charcoal
-                    
-                    // Match Screen VStack(spacing: 20)
-                    paragraphStyle.paragraphSpacing = 20
-                }
-                
-                attributes[.paragraphStyle] = paragraphStyle
-                
-                let blockString = NSAttributedString(string: block.text + "\n", attributes: attributes)
-                finalAttribString.append(blockString)
-            }
-            
-            // Draw Text in Rect
-            // Start at Calculated Top
+            // Bible text
+            let attributedText = buildAttributedText(from: text)
             let textRect = CGRect(x: leftMargin, y: textStartTop, width: textWidth, height: size.height - 120)
-            finalAttribString.draw(in: textRect)
+            attributedText.draw(in: textRect)
             
-            // 7. Draw PencilKit Drawing (Overlay)
-            // Pull drawing UP to align with on-screen text position
-            let drawingYOffset: CGFloat = -20 
-            
-            let image = drawing.image(from: pageRect, scale: 1.0)
-            let drawingRect = CGRect(x: 0, y: drawingYOffset, width: pageRect.width, height: pageRect.height)
-            image.draw(in: drawingRect)
+            // PencilKit drawing overlay
+            let drawingImage = drawing.image(from: pageRect, scale: 1.0)
+            drawingImage.draw(in: CGRect(x: 0, y: drawingYOffset, width: pageRect.width, height: pageRect.height))
         }
         
-        // 8. Save to Temp File
+        // Save to temp
         let fileName = "BibleNotes_\(title).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         
@@ -136,9 +86,37 @@ class PDFExporter {
             try data.write(to: url)
             return url
         } catch {
-            print("Could not create PDF file: \(error)")
+            print("[PDFExporter] Error saving PDF: \(error)")
             return nil
         }
     }
+    
+    // MARK: - Private Helpers
+    
+    private static func buildAttributedText(from text: String) -> NSAttributedString {
+        let blocks = BibleTextParser.parse(text)
+        let result = NSMutableAttributedString()
+        
+        for (index, block) in blocks.enumerated() {
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.lineSpacing = 10
+            
+            var attributes: [NSAttributedString.Key: Any] = [.paragraphStyle: paragraphStyle]
+            
+            if block.isHeading {
+                attributes[.font] = headingFont
+                attributes[.foregroundColor] = AppTheme.uiGoldHighlight
+                paragraphStyle.paragraphSpacing = 90
+                paragraphStyle.paragraphSpacingBefore = index == 0 ? 0 : 50
+            } else {
+                attributes[.font] = verseFont
+                attributes[.foregroundColor] = AppTheme.uiParchmentText
+                paragraphStyle.paragraphSpacing = 20
+            }
+            
+            result.append(NSAttributedString(string: block.text + "\n", attributes: attributes))
+        }
+        
+        return result
+    }
 }
-
