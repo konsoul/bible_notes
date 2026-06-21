@@ -145,9 +145,8 @@ struct ReaderView: View {
     private func exportPDF() {
         let title = "\(viewModel.currentBook) \(viewModel.currentChapter)"
         
-        // Use SnapshotExporter (WYSIWYG)
-        // We pass the PKCanvasView, which contains the Text and Lines as subviews!
-        if let url = SnapshotExporter.exportImage(canvasView: canvasView, title: title, text: viewModel.bibleText) {
+        let size = canvasView.contentSize
+        if let url = PDFExporter.exportPDF(title: title, text: viewModel.bibleText, drawing: canvasView.drawing, size: size) {
             self.pdfItem = PDFItem(url: url)
         }
     }

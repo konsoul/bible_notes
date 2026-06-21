@@ -62,7 +62,7 @@ class PDFExporter {
                 let headerFont = UIFont(name: "IowanOldStyle-Bold", size: 36) ?? UIFont.boldSystemFont(ofSize: 36)
                 let headerAttributes: [NSAttributedString.Key: Any] = [
                     .font: headerFont,
-                    .foregroundColor: UIColor(hex: "E6DCC8"), // Parchment
+                    .foregroundColor: UIColor(hex: "D4AF37"), // Gold
                     .kern: 4 // Wide tracking
                 ]
                 
@@ -102,7 +102,7 @@ class PDFExporter {
                     // Match Screen Font (20) exactly to preserve wrapping
                     let verseFont = UIFont.systemFont(ofSize: 20, weight: .regular)
                     attributes[.font] = verseFont
-                    attributes[.foregroundColor] = UIColor(hex: "E6DCC8") // Parchment
+                    attributes[.foregroundColor] = UIColor(hex: "222222") // Dark Charcoal
                     
                     // Match Screen VStack(spacing: 20)
                     paragraphStyle.paragraphSpacing = 20

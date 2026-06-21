@@ -60,7 +60,7 @@ class SnapshotExporter {
                  let headerFont = UIFont(name: "IowanOldStyle-Bold", size: 36) ?? UIFont.boldSystemFont(ofSize: 36)
                  let headerAttributes: [NSAttributedString.Key: Any] = [
                      .font: headerFont,
-                     .foregroundColor: UIColor(hex: "E6DCC8"),
+                     .foregroundColor: UIColor(hex: "D4AF37"),
                      .kern: 4
                  ]
                  let headerString = NSAttributedString(string: bookName, attributes: headerAttributes)
@@ -89,7 +89,7 @@ class SnapshotExporter {
                 } else {
                     let verseFont = UIFont.systemFont(ofSize: 20, weight: .regular)
                     attributes[.font] = verseFont
-                    attributes[.foregroundColor] = UIColor(hex: "E6DCC8") 
+                    attributes[.foregroundColor] = UIColor(hex: "222222") 
                     paragraphStyle.paragraphSpacing = 20
                 }
                 attributes[.paragraphStyle] = paragraphStyle
