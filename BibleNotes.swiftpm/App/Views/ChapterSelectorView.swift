@@ -4,9 +4,7 @@ struct ChapterSelectorView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) var dismiss
     
-    let columns = [
-        GridItem(.adaptive(minimum: 80))
-    ]
+    private let columns = [GridItem(.adaptive(minimum: 80))]
     
     var body: some View {
         ZStack {
@@ -20,10 +18,7 @@ struct ChapterSelectorView: View {
                         .font(.custom("IowanOldStyle-Bold", size: 20))
                         .foregroundColor(AppTheme.goldAccent)
                     Spacer()
-                    
-                    Button(action: {
-                        dismiss()
-                    }) {
+                    Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
                             .foregroundColor(AppTheme.goldAccent)
@@ -32,38 +27,36 @@ struct ChapterSelectorView: View {
                 .padding()
                 .background(AppTheme.lighterSepia)
                 
-                // Chapter Grid
+                // Chapter grid
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 20) {
                         let count = BibleData.chapterCounts[viewModel.currentBook] ?? 1
                         ForEach(1...count, id: \.self) { chapter in
-                            Button(action: {
-                                selectChapter(chapter)
-                            }) {
-                                Text("\(chapter)")
-                                    .font(.system(size: 24, weight: .bold, design: .serif))
-                                    .frame(minWidth: 70, minHeight: 70)
-                                    .foregroundColor(
-                                        viewModel.currentChapter == chapter
-                                        ? AppTheme.darkSepia
-                                        : AppTheme.parchmentText
-                                    )
-                                    .background(
-                                        viewModel.currentChapter == chapter
-                                        ? AppTheme.goldAccent
-                                        : AppTheme.lighterSepia
-                                    )
-                                    .cornerRadius(8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(AppTheme.goldAccent.opacity(0.3), lineWidth: 1)
-                                    )
-                            }
+                            chapterCell(chapter)
                         }
                     }
                     .padding()
                 }
             }
+        }
+    }
+    
+    // MARK: - Subviews
+    
+    private func chapterCell(_ chapter: Int) -> some View {
+        let isSelected = viewModel.currentChapter == chapter
+        
+        return Button { selectChapter(chapter) } label: {
+            Text("\(chapter)")
+                .font(.system(size: 24, weight: .bold, design: .serif))
+                .frame(minWidth: 70, minHeight: 70)
+                .foregroundColor(isSelected ? AppTheme.darkSepia : AppTheme.parchmentText)
+                .background(isSelected ? AppTheme.goldAccent : AppTheme.lighterSepia)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(AppTheme.goldAccent.opacity(0.3), lineWidth: 1)
+                )
         }
     }
     

@@ -2,91 +2,96 @@ import SwiftUI
 
 struct BibleTextView: View {
     let text: String
-    let fontSize: CGFloat = 20
     
     @EnvironmentObject var viewModel: AppViewModel
     
-
+    private let fontSize: CGFloat = 20
     
     var body: some View {
-        // ScrollView removal: UnifiedCanvasView handles scrolling
         VStack(alignment: .leading, spacing: 20) {
-                // Parse text into blocks
-                let blocks = BibleTextParser.parse(text)
+            let blocks = BibleTextParser.parse(text)
+            
+            // Book introduction header (Chapter 1 only)
+            if viewModel.currentChapter == 1 {
+                chapterOneHeader
+            }
+            
+            // Verse / heading blocks
+            ForEach(0..<blocks.count, id: \.self) { index in
+                let block = blocks[index]
                 
-                // BOOK INTRODUCTION HEADER (Chapter 1 Only)
-                if viewModel.currentChapter == 1 {
-                    VStack(alignment: .leading, spacing: 15) {
-                        GeometryReader { geo in
-                            Image("Transparent_Main_Emblem")
-                                .resizable()
-                                .scaledToFit()
-                                .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
-                                .frame(height: 260)
-                                .frame(width: UIScreen.main.bounds.width)
-                                .offset(x: -20) // Counteract the LEFT_MARGIN of 20 to strictly center on screen
-                        }
-                        .frame(height: 280) // GeometryReader needs a fixed height to not collapse
-                        .padding(.bottom, 10)
-                        
-                        Text(viewModel.currentBook.uppercased())
-                            .font(.custom("IowanOldStyle-Bold", size: 30))
-                            .tracking(4)
-                            .foregroundColor(AppTheme.goldAccent)
-                    }
-                    .transition(.opacity)
-                    .padding(.bottom, 20)
-                }
-                
-                ForEach(0..<blocks.count, id: \.self) { index in
-                    let block = blocks[index]
-                    
-                    if block.isHeading {
-                        // FANCY HEADING SEPARATOR
-                        if index > 0 {
-                            Divider()
-                                .background(AppTheme.goldAccent.opacity(0.3))
-                                .padding(.horizontal, 40)
-                                .padding(.vertical, 10)
-                        }
-                        
-                        // FANCY HEADING
-                        HStack(spacing: 0) {
-                            Spacer()
-                            // Fancy Drop Cap for Title
-                            if let firstChar = block.text.first {
-                                Text(String(firstChar))
-                                    .font(.custom("Zapfino", size: 40)) // Very fancy script
-                                    .foregroundColor(AppTheme.goldAccent)
-                                    .shadow(color: AppTheme.leatherShadow.opacity(0.3), radius: 1, x: 1, y: 1)
-                                
-                                Text(String(block.text.dropFirst()))
-                                    .font(.custom("IowanOldStyle-Bold", size: 22)) // Classic serif
-                                    .foregroundColor(AppTheme.goldAccent)
-                                    .textCase(.uppercase)
-                            }
-                            Spacer()
-                        }
-                        .padding(.vertical, 10)
-                        
-                    } else {
-                        // VERSE TEXT
-                        Text(block.text)
-                            .font(.system(size: fontSize, weight: .regular, design: .serif))
-                            .lineSpacing(10)
-                            .foregroundColor(AppTheme.parchmentText)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 2)
-                            .background(Color.clear)
-                            .cornerRadius(4)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                if block.isHeading {
+                    headingView(block: block, showDivider: index > 0)
+                } else {
+                    verseView(block: block)
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, 40)
-            .padding(.bottom, 100) // Space for scrolling
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-            // Background moved to Parent View to allow transparency for layering
+        }
+        .padding(.horizontal)
+        .padding(.top, 40)
+        .padding(.bottom, 100)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+    
+    // MARK: - Subviews
+    
+    private var chapterOneHeader: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            GeometryReader { _ in
+                Image("Transparent_Main_Emblem")
+                    .resizable()
+                    .scaledToFit()
+                    .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                    .frame(height: 260)
+                    .frame(width: UIScreen.main.bounds.width)
+                    .offset(x: -20)
+            }
+            .frame(height: 280)
+            .padding(.bottom, 10)
+            
+            Text(viewModel.currentBook.uppercased())
+                .font(.custom("IowanOldStyle-Bold", size: 30))
+                .tracking(4)
+                .foregroundColor(AppTheme.goldAccent)
+        }
+        .transition(.opacity)
+        .padding(.bottom, 20)
+    }
+    
+    @ViewBuilder
+    private func headingView(block: TextBlock, showDivider: Bool) -> some View {
+        if showDivider {
+            Divider()
+                .background(AppTheme.goldAccent.opacity(0.3))
+                .padding(.horizontal, 40)
+                .padding(.vertical, 10)
+        }
+        
+        HStack(spacing: 0) {
+            Spacer()
+            if let firstChar = block.text.first {
+                Text(String(firstChar))
+                    .font(.custom("Zapfino", size: 40))
+                    .foregroundColor(AppTheme.goldAccent)
+                    .shadow(color: AppTheme.leatherShadow.opacity(0.3), radius: 1, x: 1, y: 1)
+                
+                Text(String(block.text.dropFirst()))
+                    .font(.custom("IowanOldStyle-Bold", size: 22))
+                    .foregroundColor(AppTheme.goldAccent)
+                    .textCase(.uppercase)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 10)
+    }
+    
+    private func verseView(block: TextBlock) -> some View {
+        Text(block.text)
+            .font(.system(size: fontSize, weight: .regular, design: .serif))
+            .lineSpacing(10)
+            .foregroundColor(AppTheme.parchmentText)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 2)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
