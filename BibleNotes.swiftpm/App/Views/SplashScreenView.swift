@@ -3,17 +3,19 @@ import SwiftUI
 struct SplashScreenView: View {
     @EnvironmentObject var viewModel: AppViewModel
     
+    @State private var showBookSelector = false
+    @State private var showChapterSelector = false
+    
     var body: some View {
         ZStack {
             // 1. LEATHER BACKGROUND
             GeometryReader { geo in
-                RadialGradient(
-                    gradient: Gradient(colors: [AppTheme.leatherRed, AppTheme.leatherShadow]),
-                    center: .center,
-                    startRadius: 10,
-                    endRadius: geo.size.height
-                )
-                .ignoresSafeArea()
+                Image("LeatherTexture")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .clipped()
+                    .ignoresSafeArea()
             }
             
             // 2. GOLD TOOLING BORDER (The fancy 1600s frame)
@@ -76,41 +78,53 @@ struct SplashScreenView: View {
                 
                 Spacer()
                 
-                // 4. MINIMAL SELECTION (No white box)
+                // 4. ROBUST SELECTION BUTTONS
                 VStack(spacing: 20) {
                     Divider()
                         .background(AppTheme.goldShadow)
                         .frame(width: 100)
                     
-                    HStack(spacing: 0) {
-                        Picker("Book", selection: $viewModel.currentBook) {
-                            ForEach(viewModel.books, id: \.self) { book in
-                                Text(book)
-                                    .tag(book)
-                                    .foregroundColor(AppTheme.goldHighlight) // Trying to style item
+                    HStack(spacing: 15) {
+                        // Book Button
+                        Button(action: { showBookSelector = true }) {
+                            VStack(spacing: 5) {
+                                Text("BOOK")
+                                    .font(.caption)
+                                    .foregroundColor(AppTheme.goldShadow)
+                                    .tracking(2)
+                                Text(viewModel.currentBook)
+                                    .font(.title2.bold())
+                                    .foregroundColor(AppTheme.goldHighlight)
                             }
+                            .frame(width: 160, height: 80)
+                            .background(AppTheme.leatherShadow.opacity(0.6))
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppTheme.goldShadow.opacity(0.5), lineWidth: 1)
+                            )
                         }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(width: 150, height: 120)
                         
-                        Picker("Chapter", selection: $viewModel.currentChapter) {
-                            ForEach(1...(BibleData.chapterCounts[viewModel.currentBook] ?? 1), id: \.self) { chapter in
-                                Text("\(chapter)")
-                                    .tag(chapter)
+                        // Chapter Button
+                        Button(action: { showChapterSelector = true }) {
+                            VStack(spacing: 5) {
+                                Text("CHAPTER")
+                                    .font(.caption)
+                                    .foregroundColor(AppTheme.goldShadow)
+                                    .tracking(2)
+                                Text("\(viewModel.currentChapter)")
+                                    .font(.title2.bold())
+                                    .foregroundColor(AppTheme.goldHighlight)
                             }
+                            .frame(width: 120, height: 80)
+                            .background(AppTheme.leatherShadow.opacity(0.6))
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppTheme.goldShadow.opacity(0.5), lineWidth: 1)
+                            )
                         }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(width: 80, height: 120)
                     }
-                    .onChange(of: viewModel.currentBook) { _, _ in
-                        let maxChapter = BibleData.chapterCounts[viewModel.currentBook] ?? 1
-                        if viewModel.currentChapter > maxChapter {
-                            viewModel.currentChapter = 1
-                        }
-                    }
-                    // Force the picker text to look "gold" by applying color scheme or mask
-                    // Standard WheelPicker is stubborn, but ColorScheme.dark helps on dark bg
-                    .colorScheme(.dark)
                     
                     Button(action: {
                         viewModel.openBible()
@@ -122,8 +136,8 @@ struct SplashScreenView: View {
                                 .tracking(1)
                         }
                         .foregroundColor(AppTheme.leatherShadow)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 30)
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 40)
                         .background(
                             LinearGradient(
                                 gradient: Gradient(colors: [AppTheme.goldHighlight, AppTheme.goldShadow]),
@@ -134,6 +148,7 @@ struct SplashScreenView: View {
                         .cornerRadius(8)
                         .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 5)
                     }
+                    .padding(.top, 10)
                 }
                 
                 Spacer()
@@ -145,5 +160,11 @@ struct SplashScreenView: View {
             }
         }
         .statusBar(hidden: true)
+        .sheet(isPresented: $showBookSelector) {
+            BookSelectorView()
+        }
+        .sheet(isPresented: $showChapterSelector) {
+            ChapterSelectorView()
+        }
     }
 }

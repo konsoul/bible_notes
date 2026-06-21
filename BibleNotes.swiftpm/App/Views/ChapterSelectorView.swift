@@ -5,7 +5,7 @@ struct ChapterSelectorView: View {
     @Environment(\.dismiss) var dismiss
     
     let columns = [
-        GridItem(.adaptive(minimum: 60))
+        GridItem(.adaptive(minimum: 80))
     ]
     
     var body: some View {
@@ -41,8 +41,8 @@ struct ChapterSelectorView: View {
                                 selectChapter(chapter)
                             }) {
                                 Text("\(chapter)")
-                                    .font(.system(size: 20, weight: .bold, design: .serif))
-                                    .frame(minWidth: 50, minHeight: 50)
+                                    .font(.system(size: 24, weight: .bold, design: .serif))
+                                    .frame(minWidth: 70, minHeight: 70)
                                     .foregroundColor(
                                         viewModel.currentChapter == chapter
                                         ? AppTheme.darkSepia
