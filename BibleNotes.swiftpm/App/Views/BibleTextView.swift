@@ -21,6 +21,7 @@ struct BibleTextView: View {
                             Image("Transparent_Main_Emblem")
                                 .resizable()
                                 .scaledToFit()
+                                .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
                                 .frame(height: 260)
                                 .frame(width: UIScreen.main.bounds.width)
                                 .offset(x: -20) // Counteract the LEFT_MARGIN of 20 to strictly center on screen
